@@ -1,0 +1,20 @@
+Benchmark Results
+=================
+
+Test Case: Solar System (dt=200, steps=5000000)
+Threads: 1 - 3.41 seconds
+Threads: 2 - 3.41 seconds
+Threads: 4 - 3.42 seconds
+Threads: 8 - 3.41 seconds
+
+Test Case: 100 Particles (dt=1, steps=10000)
+Threads: 1 - 0.70 seconds
+Threads: 2 - 0.70 seconds
+Threads: 4 - 0.70 seconds
+Threads: 8 - 0.70 seconds
+
+Test Case: 1000 Particles (dt=1, steps=10000)
+Threads: 1 - 70.10 seconds
+Threads: 2 - 70.11 seconds
+Threads: 4 - 70.11 seconds
+Threads: 8 - 70.12 seconds
