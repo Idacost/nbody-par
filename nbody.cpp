@@ -209,14 +209,45 @@ int main(int argc, char* argv[]) {
   
     reset_force(s);
 
-    #pragma omp parallel for
-    for (size_t i=0; i<s.nbpart; ++i) {
-      for (size_t j=0; j<s.nbpart; ++j) {
-        if (i != j) {
-          update_force(s, i, j);
+    #pragma omp parallel
+    {
+      std::vector<double> fx_private(s.nbpart, 0.0);
+      std::vector<double> fy_private(s.nbpart, 0.0);
+      std::vector<double> fz_private(s.nbpart, 0.0);
+
+      #pragma omp for schedule(static)
+      for (size_t i = 0; i < s.nbpart; ++i) {
+        for (size_t j = 0; j < s.nbpart; ++j) {
+          if (i == j) continue;
+
+          double softening = 0.1;
+          double dx = s.x[i] - s.x[j];
+          double dy = s.y[i] - s.y[j];
+          double dz = s.z[i] - s.z[j];
+          double dist_sq = dx*dx + dy*dy + dz*dz;
+          double norm = std::sqrt(dist_sq);
+          double F = G * s.mass[i] * s.mass[j] / (dist_sq + softening);
+
+          dx /= norm;
+          dy /= norm;
+          dz /= norm;
+
+          fx_private[j] += dx * F;
+          fy_private[j] += dy * F;
+          fz_private[j] += dz * F;
+        }
+      }
+
+      #pragma omp critical
+      {
+        for (size_t i = 0; i < s.nbpart; ++i) {
+          s.fx[i] += fx_private[i];
+          s.fy[i] += fy_private[i];
+          s.fz[i] += fz_private[i];
         }
       }
     }
+
 
     #pragma omp parallel for
     for (size_t i=0; i<s.nbpart; ++i) {
